@@ -21,44 +21,44 @@ app.get("/:code", (req, res) => {
       !err ? resolve(reply) : reject(err);
     })
   )
-		.then(result => {
-			result === null ? 
-			res.send('Link has expired') :
-			res.redirect(result)
-		})
+    .then(result => {
+      result ? res.redirect(result) : res.send("Link has expired")
+    })
     .catch(err => res.send("Not a valid link"));
 });
 
 app.post("/create-tiny", async (req, res) => {
   const { url, duration } = req.body;
   if (validUrl.isUri(url)) {
-		let safety = 0;
-		let hasFoundCode = false; 
+    let safety = 0;
+    let hasFoundCode = false;
     while (safety < 100) {
       const urlCode = shortid.generate();
       await new Promise((resolve, reject) =>
         redisClient.exists(urlCode, (err, reply) => {
           !err ? resolve(reply) : reject(err);
         })
-      ).then(async reply => {
-        if (!reply) {
-          await new Promise((resolve, reject) => redisClient.set(urlCode, url, 'EX', duration, (err, reply) => {
-						!err ? resolve(reply) : reject(err)
-					}))
-					.then(() => {
-						hasFoundCode = true; 
-						res.send(urlCode)
-					})
-        }
-			})
-			.catch(console.log)
-			if (hasFoundCode) {
-				break; 
-			}
+      )
+        .then(async reply => {
+          if (!reply) {
+            await new Promise((resolve, reject) =>
+              redisClient.set(urlCode, url, "EX", duration, (err, reply) => {
+                !err ? resolve(reply) : reject(err);
+              })
+            ).then(() => {
+              hasFoundCode = true;
+              res.send(urlCode);
+            });
+          }
+        })
+        .catch(console.log);
+      if (hasFoundCode) {
+        break;
+      }
       safety++;
     }
     if (safety === 100) {
-        res.status(409).send('Could not store url code. Please try again')
+      res.status(409).send("Could not store url code. Please try again");
     }
   } else {
     res.send("Not a valid url");
