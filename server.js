@@ -30,20 +30,23 @@ app.get('/:code', (req, res) => {
 app.post('/create-tiny', async (req, res) => {
     const { url } = req.body; 
     if (validUrl.isUri(url)) {
-        const urlCode = shortid.generate()
-        const hasUrlCode = await new Promise((resolve, reject) => redisClient.exists(urlCode, (err, reply) => {
-            if (!err) {
-                resolve(reply)
-            } else {
-                reject(err)
+        let safety = 0; 
+        while (safety < 100) {
+            const urlCode = shortid.generate()
+            const hasUrlCode = await new Promise((resolve, reject) => redisClient.exists(urlCode, (err, reply) => {
+                if (!err) {
+                    resolve(reply)
+                } else {
+                    reject(err)
+                }
+            }))
+            if (!hasUrlCode) {
+                Promise.resolve(redisClient.set(urlCode, url))
+                    .then(res.send(urlCode))
             }
-        }))
-        if (!hasUrlCode) {
-            Promise.resolve(redisClient.set(urlCode, url))
-                .then(res.send(urlCode))
-        } else {
-            res.send('Short url already exists, try again!'); 
+            safety++; 
         }
+        res.status(409).send('Could not store url code. Please try again')
     } else {
         res.send('Not a valid url')
     }
