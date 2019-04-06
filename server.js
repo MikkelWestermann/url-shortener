@@ -30,7 +30,7 @@ app.get("/:code", (req, res) => {
 });
 
 app.post("/create-tiny", async (req, res) => {
-  const { url } = req.body;
+  const { url, duration } = req.body;
   if (validUrl.isUri(url)) {
 		let safety = 0;
 		let hasFoundCode = false; 
@@ -42,7 +42,7 @@ app.post("/create-tiny", async (req, res) => {
         })
       ).then(async reply => {
         if (!reply) {
-          await new Promise((resolve, reject) => redisClient.set(urlCode, url, 'EX', 10, (err, reply) => {
+          await new Promise((resolve, reject) => redisClient.set(urlCode, url, 'EX', duration, (err, reply) => {
 						!err ? resolve(reply) : reject(err)
 					}))
 					.then(() => {
