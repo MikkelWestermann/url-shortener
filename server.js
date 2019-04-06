@@ -4,7 +4,7 @@ const validUrl = require("valid-url");
 const shortid = require("shortid");
 const bodyParser = require('body-parser'); 
 
-const redisClient = redis.createClient(process.env.REDIS_URI);
+const redisClient = redis.createClient('redis://redis:6379');
 
 const app = express();
 
@@ -24,13 +24,14 @@ app.get('/:code', (req, res) => {
         }
     }))
         .then(result => res.redirect(result))
+        .catch(err => res.send('Not a valid link'))
 })
-
+ 
 app.post('/create-tiny', async (req, res) => {
     const { url } = req.body; 
     if (validUrl.isUri(url)) {
         const urlCode = shortid.generate()
-        const hasUrlCode = await new Promise((resolve, reject) => redisClient.exists(urlCode, async (err, reply) => {
+        const hasUrlCode = await new Promise((resolve, reject) => redisClient.exists(urlCode, (err, reply) => {
             if (!err) {
                 resolve(reply)
             } else {
