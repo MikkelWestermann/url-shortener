@@ -4,7 +4,7 @@ const validUrl = require("valid-url");
 const shortid = require("shortid");
 const bodyParser = require('body-parser'); 
 
-const redisClient = redis.createClient('redis://redis:6379');
+const redisClient = redis.createClient(process.env.REDIS_URI);
 
 const app = express();
 
@@ -17,11 +17,7 @@ app.get('/', (req, res) => {
 app.get('/:code', (req, res) => {
     const { code } = req.params; 
     new Promise((resolve, reject) => redisClient.get(code, (err, reply) => {
-        if (!err) {
-            resolve(reply)
-        } else {
-            reject(err)
-        }
+        !err ? resolve(reply) : reject(err)
     }))
         .then(result => res.redirect(result))
         .catch(err => res.send('Not a valid link'))
@@ -34,11 +30,7 @@ app.post('/create-tiny', async (req, res) => {
         while (safety < 100) {
             const urlCode = shortid.generate()
             const hasUrlCode = await new Promise((resolve, reject) => redisClient.exists(urlCode, (err, reply) => {
-                if (!err) {
-                    resolve(reply)
-                } else {
-                    reject(err)
-                }
+                !err ? resolve(reply) : reject(err)
             }))
             if (!hasUrlCode) {
                 Promise.resolve(redisClient.set(urlCode, url))
@@ -46,7 +38,9 @@ app.post('/create-tiny', async (req, res) => {
             }
             safety++; 
         }
-        res.status(409).send('Could not store url code. Please try again')
+        if (safety === 100) {
+            res.status(409).send('Could not store url code. Please try again')
+        }
     } else {
         res.send('Not a valid url')
     }
