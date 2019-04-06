@@ -1,9 +1,11 @@
 const express = require('express'); 
+const redis = require('redis'); 
+
+const redisClient = redis.createClient(process.env.REDIS_URI); 
 
 const app = express();
 
 app.get('/', (req, res) => {
-    console.log('Hello World!')
     res.send('<h1>Helloooo World!</h1>')
 })
 
