@@ -10,8 +10,11 @@
   "author": "Mikkel",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "shortid": "^2.2.14",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"
