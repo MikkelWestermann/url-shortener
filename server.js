@@ -86,7 +86,7 @@ app.post("/create-tiny", async (req, res) => {
             ).then(() => {
 							// Everything was successful!!!
               hasFoundCode = true;
-              res.send(urlCode);
+              res.status(200).json({code: urlCode});
             });
           }
         })
@@ -101,7 +101,7 @@ app.post("/create-tiny", async (req, res) => {
       res.status(409).send("Could not store url code. Please try again");
     }
   } else {
-    res.send("Not a valid url");
+    res.status(400).send("Not a valid url");
   }
 });
 
