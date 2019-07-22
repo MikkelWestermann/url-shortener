@@ -16,7 +16,6 @@ const whitelist = ['localhost', 'localhost:3000', 'http://localhost:3000']
 const corsOptionsDelegate = function (req, callback) {
   let corsOptions;
   if (whitelist.includes(req.header('Origin'))) {
-    console.log("TCL: corsOptionsDelegate -> whitelist", whitelist)
     corsOptions = {
       origin: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'Current-Region']
