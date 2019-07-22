@@ -31,6 +31,7 @@ const corsOptionsDelegate = function (req, callback) {
 app.use(cors(corsOptionsDelegate));
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("working");
