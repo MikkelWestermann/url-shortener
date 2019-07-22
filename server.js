@@ -3,10 +3,33 @@ const redis = require("redis");
 const validUrl = require("valid-url");
 const shortid = require("shortid");
 const bodyParser = require("body-parser");
+const cors = require('cors');
 
 const redisClient = redis.createClient(process.env.REDIS_URI);
 
 const app = express();
+
+// CORS
+
+const whitelist = ['localhost', 'localhost:3000', 'http://localhost:3000']
+
+const corsOptionsDelegate = function (req, callback) {
+  let corsOptions;
+  if (whitelist.includes(req.header('Origin'))) {
+    console.log("TCL: corsOptionsDelegate -> whitelist", whitelist)
+    corsOptions = {
+      origin: true,
+      allowedHeaders: ['Content-Type', 'Authorization', 'Current-Region']
+    }; // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = {
+      origin: false
+    }; // disable CORS for this request
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
+
+app.use(cors(corsOptionsDelegate));
 
 app.use(bodyParser.json());
 
@@ -14,6 +37,7 @@ app.get("/", (req, res) => {
   res.send("working");
 });
 
+  
 app.get("/:code", (req, res) => {
   const { code } = req.params;
 	new Promise((resolve, reject) =>
